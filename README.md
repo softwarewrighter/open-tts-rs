@@ -1,0 +1,157 @@
+# open-tts-rs
+
+A Rust command-line interface for text-to-speech generation using open-source, commercially licensed TTS models. Supports voice cloning via reference audio and speech synthesis using the cloned voice.
+
+## Features
+
+- **Voice Cloning**: Clone voices from reference audio samples (3-30 seconds)
+- **Multiple Models**: Support for OpenVoice V2 (MIT) and OpenF5-TTS (Apache 2.0)
+- **Voice Management**: Save, load, list, and delete named voices
+- **Commercial Use**: All supported models are permissively licensed
+
+## Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/softwarewrighter/open-tts-rs.git
+cd open-tts-rs
+
+# Build (requires Rust 2024 edition)
+cargo build --release
+
+# Install (optional)
+cargo install --path .
+```
+
+### Prerequisites
+
+- Rust 1.85+ (2024 edition)
+- Python 3.10+ with pip
+- NVIDIA GPU with CUDA (recommended) or CPU-only mode
+
+### Python Dependencies
+
+```bash
+# Install Python TTS libraries
+pip install openvoice melo-tts f5-tts torch numpy
+```
+
+## Usage
+
+```
+open-tts-rs [OPTIONS]
+
+OPTIONS:
+    -m, --model <MODEL>        TTS model: "ov" (OpenVoiceV2) or "of" (OpenF5-TTS) [default: ov]
+    -r, --reference <REF>      Reference audio with transcript: "file.wav;transcript text"
+    -g, --generate <TEXT>      Text to generate speech from
+    -n, --name <NAME>          Name for saving/loading voice
+    -o, --output <FILE>        Output audio file [default: output.wav]
+    -v, --verbose              Enable verbose output
+        --list-voices          List all saved voices
+        --delete-voice <NAME>  Delete a saved voice
+    -h, --help                 Print help information
+    -V, --version              Print version information
+```
+
+### Examples
+
+```bash
+# Clone voice from reference and generate speech immediately
+open-tts-rs -m ov -r "sample.wav;Hello, this is a sample of my voice." \
+            -g "Welcome to the demonstration."
+
+# Clone and save a voice for later use
+open-tts-rs -m of -r "recording.wav;This is my recorded message." -n my_voice
+
+# Generate using a previously saved voice
+open-tts-rs -n my_voice -g "Generate this text with my saved voice." -o speech.wav
+
+# List all saved voices
+open-tts-rs --list-voices
+
+# Delete a saved voice
+open-tts-rs --delete-voice old_voice
+```
+
+## Supported Models
+
+| Model | Flag | License | Best For |
+|-------|------|---------|----------|
+| OpenVoice V2 | `ov` | MIT | Fast voice cloning with good timbre matching |
+| OpenF5-TTS | `of` | Apache 2.0 | Advanced atmospheric cloning with emotion preservation |
+
+## Documentation
+
+- [Product Requirements (PRD)](docs/prd.md) - Features, requirements, and use cases
+- [Architecture](docs/architecture.md) - System design and component overview
+- [Design](docs/design.md) - Technical design and code structure
+- [Implementation Plan](docs/plan.md) - Phased development roadmap
+- [Project Status](docs/status.md) - Current progress and next steps
+- [AI Agent Instructions](docs/ai_agent_instructions.md) - Guidelines for AI coding agents
+- [Development Process](docs/process.md) - TDD workflow and quality standards
+- [Development Tools](docs/tools.md) - Recommended tooling
+
+## Development
+
+This project uses Rust 2024 edition and follows Test-Driven Development (TDD).
+
+```bash
+# Run tests
+cargo test
+
+# Run linter (zero warnings policy)
+cargo clippy --all-targets --all-features -- -D warnings
+
+# Format code
+cargo fmt
+
+# Build documentation
+cargo doc --open
+```
+
+### Pre-Commit Checklist
+
+Before committing, ensure:
+1. All tests pass (`cargo test`)
+2. Zero clippy warnings (`cargo clippy -- -D warnings`)
+3. Code formatted (`cargo fmt`)
+4. Documentation updated
+
+See [docs/process.md](docs/process.md) for the complete development workflow.
+
+## Project Structure
+
+```
+open-tts-rs/
++-- src/
+|   +-- main.rs           # Entry point
+|   +-- cli/              # Command-line interface
+|   +-- core/             # Business logic
+|   +-- backend/          # TTS model backends
+|   +-- voice/            # Voice management
+|   +-- audio/            # Audio I/O
++-- docs/
+|   +-- prd.md            # Product requirements
+|   +-- architecture.md   # System architecture
+|   +-- design.md         # Technical design
+|   +-- plan.md           # Implementation plan
+|   +-- status.md         # Project status
+|   +-- process.md        # Development process
+|   +-- tools.md          # Development tools
++-- Cargo.toml
++-- README.md
++-- LICENSE
+```
+
+## License
+
+Copyright (c) 2025 Michael A Wright
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+
+## Acknowledgments
+
+- [OpenVoice](https://github.com/myshell-ai/OpenVoice) - MIT licensed voice cloning
+- [F5-TTS](https://github.com/SWivid/F5-TTS) - Flow-matching TTS (use OpenF5 weights for commercial use)
+- [Kokoro](https://github.com/hexgrad/kokoro) - Research reference for TTS quality standards

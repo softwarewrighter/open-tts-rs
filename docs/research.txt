@@ -1,0 +1,186 @@
+Gemini
+
+Local Commercial TTS Model Recommendations
+
+New chat
+My Stuff
+GitHub Public Wiki Checker (No Token)
+GitHub Advanced Wiki Checker
+GitHub Wiki Checker
+Gems
+Chats
+Local Commercial TTS Model Recommendations
+Garage Space, Car Choice Dilemma
+Modern React Best Practices and Flux
+Describe CLI commands
+Ryobi 4V Battery Compatibility Guide
+React Component Isolation Tools
+Preview SVG Files From Command Line
+ToonTalk: Open Source, Linux, VM
+GoDaddy Free SSL Setup Guide
+GitHub Repo Wiki Status Check
+East Coast Trip Planning with Miles
+Serving Yew WASM Apps Locally
+Three.js Z-Up Coordinate System
+Wikibase API Usage and Costs
+RCA 1802 Space Mission Summary
+Witty Responses: Subverting Expectations
+Freebase: Google's Acquired Knowledge Graph
+Dutchess County Data Service Bureaus
+GPU Quantized Model Support
+Autoencoders and VAEs Explained
+Deepseek Attention: Experts, GQA, MLA
+Model Comparison: BERT, LoRA, VAEs
+Quantized LLM Model Naming Explained
+IBM Punch Card Corner Cut and Specifications
+Rodent Repellents and Control Strategies
+Signal Account: Security and Scams
+Edit GitHub PR Base Branch
+Adjust Chrome Remote Desktop Resolution
+IBM 1130 Console Controls Explained
+Deploy Vite React App to GitHub Pages
+IBM 1130 Console Programming Guide
+Ignoring Integrity Attribute Warning
+Finding Sent Google Group Replies
+ML Dimension Reduction Visualization
+Used 75W GPU eBay Price Ranking
+Evaluating Expression Using Order of Operations
+YieldMax ETF Distribution Schedule Changes
+Energy Efficient LLM Research Update
+Nvidia GPU Comparison and Usage
+PCA for Visualizing High-Dimensional Data
+Qwen Model Docker Key Explained
+SINQ vs. Unsloth Quantization Methods
+
+Settings & help
+Conversation with Gemini
+I am looking for a good open-model liberally licensed (for commercial use) TTS model that I can run on a consumer grade Nvidia GPU locally. I've had bad experiences with Dia, GPTsovits, and Toucan (low quality).
+
+For a liberally licensed (Apache 2.0 / MIT), high-quality, commercial-use TTS model that runs locally on a consumer NVIDIA GPU, Kokoro is currently the strongest recommendation.
+
+It explicitly avoids the quality issues you faced with Toucan/Dia and the licensing traps of many "open" models (like Fish Speech or standard StyleTTS2).
+
+Top Recommendation: Kokoro
+License: Apache 2.0 (Permissive for commercial use; code and model weights).
+
+Why it fits: It is a new (~82M parameter) model released in late 2024/early 2025 that punches significantly above its weight class. It offers "near-ElevenLabs" quality for English and is incredibly fast.
+
+Performance: extremely lightweight. On a consumer NVIDIA GPU (RTX 3060/4070), it runs faster than real-time. It is efficient enough to run alongside a local LLM without bottlenecking your VRAM.
+
+Voice Quality: Much more natural prosody than Piper or Toucan. It handles difficult intonations well and feels less "robotic."
+
+How to run it:
+
+Python: pip install kokoro (official library is gaining traction).
+
+ONNX: Fully supports ONNX, making it easy to integrate into production apps.
+
+WebUI: Can be run via Kokoro-FastAPI or within standard text-generation-webui extensions.
+
+Runner-Up (For Features/Zero-Shot): Chatterbox (by Resemble AI)
+License: MIT.
+
+Why it fits: If you specifically need Zero-Shot Voice Cloning (cloning a voice from a 5-second sample) while maintaining a strict MIT license, this is your best bet.
+
+Pros: Supports real-time synthesis, multiple languages, and is built by a commercial TTS company (Resemble) releasing their research model.
+
+Cons: Slightly heavier setup than Kokoro.
+
+Bleeding Edge Alternative: OpenF5-TTS
+License: Apache 2.0.
+
+Why it fits: This is a "fork" of the popular F5-TTS. The original F5-TTS is excellent but uses a non-commercial license due to its training data. OpenF5-TTS was retrained from scratch on the permissive Emilia-YODAS dataset.
+
+Use case: Use this if you need advanced flow-matching architecture (similar to Stability AI's methods) but legally cannot use the original F5 weights.
+
+Note: As it is a retraining effort, verify the current checkpoint quality; it may slightly trail the original non-commercial F5 model.
+
+⚠️ Models to Avoid (Traps)
+Since you are looking for commercial use, be very careful with these popular models often recommended on Reddit/Twitter:
+
+Fish Speech: AVOID. While the code is Apache 2.0, the official pre-trained weights are CC-BY-NC-SA (Non-Commercial). The authors strictly enforce this. You would have to retrain it yourself on clean data to use it commercially.
+
+StyleTTS 2: CAUTION. The code is MIT, but the most popular pre-trained weights (trained on LibriTTS + proprietary data) are often Non-Commercial. You must specifically find a checkpoint trained only on LibriTTS (which usually sounds worse) to use it legally.
+
+Tortoise TTS: OUTDATED. High quality but painfully slow. Kokoro beats it on speed by an order of magnitude with similar quality.
+
+Summary Recommendation
+Start with Kokoro. It is currently the "gold standard" for open-weight, commercially usable, local TTS.
+
+GitHub: hexgrad/kokoro
+
+HuggingFace: hexgrad/Kokoro-82M
+
+How can I train Kokoro to use (clone) my voice, or add new voices? Is there a way to combine (average) multiple voices to derive a new voice? If not with Kokoro, then which alternatives have these cababilities? I prefer ones with liberal (commercial use permitted) licenses.
+
+Can Kokoro Clone Voices?
+Short Answer: No, not in the "upload 5 seconds and it speaks" sense (Zero-Shot Cloning). Kokoro does not currently have a native encoder to take a user's audio sample and instantly generate a voice from it.
+
+However, it DOES support Voice Mixing (combining existing voices), which allows you to create unique, custom voices that don't sound like the stock presets.
+
+1. How to "Create" a Voice with Kokoro (Voice Mixing)
+Since Kokoro uses vector embeddings for voices, you can mathematically average them to create new ones. This is a powerful way to generate a unique "brand voice" that is legally safe and distinct from the defaults.
+
+The Concept: You combine voice vectors using weights (e.g., 50% Bella + 50% Sarah).
+
+How to do it:
+
+Using Kokoro-TTS CLI: Many community tools now support a simple syntax for this.
+
+Bash
+# Example: Mix 60% Bella (American) with 40% Emma (British)
+kokoro-tts --voice "af_bella:0.6,bf_emma:0.4" "Hello world"
+Using Python (Programmatic): You can load the .pt voice files (which are just PyTorch tensors), average them, and save the result as a new voice file.
+
+Python
+import torch
+# Load two voices
+voice1 = torch.load("voices/af_bella.pt")
+voice2 = torch.load("voices/af_sarah.pt")
+
+# Create a 50/50 mix
+new_voice = (voice1 * 0.5) + (voice2 * 0.5)
+
+# Save as a new custom voice
+torch.save(new_voice, "voices/my_custom_voice.pt")
+2. Best Alternatives for "Real" Voice Cloning (Commercial Use)
+If you need to clone your voice (or a specific target voice) from an audio sample, Kokoro is not the right tool. Use one of these liberally licensed alternatives instead:
+
+Top Pick: OpenVoice V2
+License: MIT (Code & Weights are confirmed free for commercial use).
+
+Why it works: It is specifically designed for Zero-Shot Voice Cloning. You provide a reference audio clip, and it controls the "tone color" (timbre) of the voice while preserving the accent/style.
+
+Pros: Very fast, MIT license is extremely permissive.
+
+Cons: The prosody (rhythm/emotion) is sometimes less expressive than F5 or Kokoro, as it focuses heavily on tone matching.
+
+Runner Up: OpenF5-TTS (Apache 2.0 Variant)
+License: Apache 2.0.
+
+Important Distinction: The "official" F5-TTS weights are Non-Commercial (CC-BY-NC). You must specifically use OpenF5-TTS (available on HuggingFace), which was retrained on the permissive Emilia-YODAS dataset.
+
+Why it works: It uses "Flow Matching" (similar to Stable Diffusion for audio). It is excellent at cloning not just the voice, but the atmosphere (background noise, reverb, emotion) of the reference clip.
+
+Pros: State-of-the-art architecture.
+
+Cons: Heavier to run than Kokoro; check the OpenF5 specific checkpoint quality, as it may be slightly behind the official non-commercial one.
+
+Summary Comparison Table
+Feature	Kokoro (v1.0)	OpenVoice V2	OpenF5-TTS
+Best For	Speed & Natural Prosody	Instant Voice Cloning	Advanced/Atmospheric Cloning
+Cloning Type	Mixing Only (Combine presets)	Zero-Shot (Reference Audio)	Zero-Shot (Reference Audio)
+License	Apache 2.0	MIT	Apache 2.0 (Must use OpenF5 weights)
+Speed	🚀 Blazing Fast	⚡ Fast	🐢 Slower (requires good GPU)
+Commercial Use?	✅ Yes	✅ Yes	✅ Yes (verify "OpenF5" variant)
+Recommendation
+For a unique app voice: Use Kokoro and mix af_bella + af_sarah (or others) to create a custom "signature" voice. It's the fastest and safest route.
+
+For cloning yourself: Use OpenVoice V2. It is the safest legal bet for commercial voice cloning right now without retraining a model from scratch.
+
+
+
+
+Gemini can make mistakes, so double-check it
+
+

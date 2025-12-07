@@ -1,0 +1,30 @@
+# Rust
+/target/
+Cargo.lock
+
+# Python (for TTS model dependencies)
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+*.so
+.env
+.venv/
+venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project-specific
+*.wav
+*.mp3
+!test_fixtures/*.wav
+output/
