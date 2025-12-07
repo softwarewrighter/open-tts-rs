@@ -2,5 +2,34 @@
 name = "open-tts-rs"
 version = "0.1.0"
 edition = "2024"
+description = "Voice cloning and text-to-speech CLI using open-source models"
+license = "MIT"
+repository = "https://github.com/softwarewrighter/open-tts-rs"
+
+[[bin]]
+name = "open-tts-rs"
+path = "src/main.rs"
 
 [dependencies]
+# CLI
+clap = { version = "4", features = ["derive"] }
+
+# HTTP client for backend communication
+reqwest = { version = "0.12", features = ["json", "multipart", "blocking"] }
+
+# Audio processing
+hound = "3.5"
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+chrono = { version = "0.4", features = ["serde"] }
+
+# Utilities
+anyhow = "1"
+thiserror = "2"
+dirs = "6"
+
+[dev-dependencies]
+tempfile = "3"
+mockall = "0.13"

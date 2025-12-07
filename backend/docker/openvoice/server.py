@@ -143,22 +143,16 @@ def extract_voice():
             from openvoice import se_extractor
 
             # Extract speaker embedding
+            # vad=False to avoid rejecting valid audio with pauses
             target_se, audio_name = se_extractor.get_se(
                 tmp_path,
                 tone_color_converter,
-                vad=True
+                vad=False
             )
 
             # Convert to serializable format
             embedding_data = target_se.cpu().numpy().tobytes()
             embedding_b64 = base64.b64encode(embedding_data).decode('utf-8')
-
-            result = {
-                'success': True,
-                'embedding': embedding_b64,
-                'embedding_shape': list(target_se.shape),
-                'transcript': transcript
-            }
 
             # Save if name provided
             if voice_name:
@@ -171,10 +165,15 @@ def extract_voice():
                 }
                 with open(voice_path, 'w') as f:
                     json.dump(voice_data, f)
-                result['saved_as'] = voice_name
                 logger.info(f"Voice saved as: {voice_name}")
 
-            return jsonify(result)
+            # Return VoiceInfo-compatible response
+            return jsonify({
+                'name': voice_name if voice_name else 'unnamed',
+                'transcript': transcript,
+                'model': 'openvoice_v2',
+                'duration': None
+            })
 
         finally:
             os.unlink(tmp_path)

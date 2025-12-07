@@ -26,5 +26,7 @@ Thumbs.db
 # Project-specific
 *.wav
 *.mp3
-!test_fixtures/*.wav
+*.m4a
+!tests/fixtures/*.wav
 output/
+work/

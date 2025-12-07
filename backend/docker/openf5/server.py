@@ -73,11 +73,12 @@ def load_models():
 
         from f5_tts.api import F5TTS
 
-        # Load model with OpenF5 weights
+        # Load model with OpenF5 Apache 2.0 licensed weights
+        # Using mrfakename/OpenF5-TTS-Base - trained on permissively-licensed data
         f5_model = F5TTS(
-            model_type="F5-TTS",
-            ckpt_file="/app/models/F5TTS_Base/model_1200000.safetensors",
-            vocab_file="/app/models/F5TTS_Base/vocab.txt",
+            model="F5TTS_v1_Base",
+            ckpt_file="/app/models/OpenF5-TTS-Base/model.pt",
+            vocab_file="/app/models/OpenF5-TTS-Base/vocab.txt",
             device=device
         )
 
@@ -169,13 +170,7 @@ def extract_voice():
             (audio_b64 + transcript).encode()
         ).hexdigest()[:16]
 
-        result = {
-            'success': True,
-            'voice_id': voice_id,
-            'duration': len(audio_data) / SAMPLE_RATE,
-            'transcript': transcript,
-            'note': 'F5-TTS uses reference audio directly (no embedding)'
-        }
+        duration = len(audio_data) / SAMPLE_RATE
 
         # Save if name provided
         if voice_name:
@@ -184,7 +179,7 @@ def extract_voice():
                 'audio_b64': audio_b64,
                 'transcript': transcript,
                 'sample_rate': SAMPLE_RATE,
-                'duration': len(audio_data) / SAMPLE_RATE,
+                'duration': duration,
                 'model': 'openf5_tts'
             }
             with open(voice_path, 'w') as f:
@@ -194,13 +189,15 @@ def extract_voice():
             audio_path = VOICE_DIR / f"{voice_name}.wav"
             sf.write(str(audio_path), audio_data, SAMPLE_RATE)
 
-            result['saved_as'] = voice_name
             logger.info(f"Voice saved as: {voice_name}")
 
-        # Return audio for temporary use
-        result['audio'] = audio_b64
-
-        return jsonify(result)
+        # Return VoiceInfo format expected by CLI
+        return jsonify({
+            'name': voice_name if voice_name else voice_id,
+            'transcript': transcript,
+            'model': 'openf5_tts',
+            'duration': duration
+        })
 
     except Exception as e:
         logger.error(f"Voice extraction failed: {e}")

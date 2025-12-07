@@ -37,7 +37,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     portaudio19-dev \
     build-essential \
     cmake \
+    mecab \
+    libmecab-dev \
+    mecab-ipadic-utf8 \
+    pkg-config \
+    libssl-dev \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Rust via rustup (Ubuntu's packaged Rust is too old for tokenizers)
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+# Allow invalid_reference_casting lint (tokenizers source has this issue with newer Rust)
+ENV RUSTFLAGS="-A invalid_reference_casting"
 
 # Set python3.12 as default
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 \
@@ -59,7 +70,9 @@ RUN pip install --no-cache-dir --pre torch torchaudio \
     --index-url https://download.pytorch.org/whl/nightly/cu128
 
 # Install OpenVoice dependencies
+# Install transformers (with tokenizers) from PyPI first to get prebuilt wheels
 RUN pip install --no-cache-dir \
+    transformers \
     numpy \
     scipy \
     librosa \
@@ -74,6 +87,7 @@ RUN pip install --no-cache-dir \
     faster-whisper \
     pydub \
     wavmark \
+    whisper-timestamped \
     flask \
     flask-cors \
     gunicorn
@@ -85,13 +99,28 @@ WORKDIR /app/openvoice
 # Install MeloTTS (required for OpenVoice base TTS)
 RUN pip install --no-cache-dir git+https://github.com/myshell-ai/MeloTTS.git
 
-# Install OpenVoice
-RUN pip install --no-cache-dir -e .
+# Download unidic dictionary for Japanese text processing
+RUN python -m unidic download
 
-# Download model checkpoints
-RUN python -c "from openvoice.api import ToneColorConverter; \
-    from melo.api import TTS; \
-    print('Downloading models...')" || true
+# Install OpenVoice (--no-deps to avoid ancient pinned versions incompatible with Python 3.12)
+RUN pip install --no-cache-dir --no-deps -e .
+
+# Patch se_extractor.py to use CPU for WhisperModel (avoids cuDNN library issues)
+RUN sed -i 's/device="cuda", compute_type="float16"/device="cpu", compute_type="int8"/g' /app/openvoice/openvoice/se_extractor.py
+
+# Download OpenVoice V2 checkpoints from HuggingFace
+RUN python -c "\
+from huggingface_hub import snapshot_download; \
+import shutil, os; \
+print('Downloading OpenVoice V2 checkpoints...'); \
+snapshot_download(repo_id='myshell-ai/OpenVoiceV2', local_dir='/app/openvoice/checkpoints_v2'); \
+print('Download complete')"
+
+# Pre-download MeloTTS models
+RUN python -c "from melo.api import TTS; TTS(language='EN', device='cpu'); print('MeloTTS models cached')"
+
+# Download required NLTK data for text processing
+RUN python -c "import nltk; nltk.download('averaged_perceptron_tagger_eng'); print('NLTK data downloaded')"
 
 # Copy server script
 WORKDIR /app

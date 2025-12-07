@@ -1,0 +1,14 @@
+{
+  "voices": [
+    {
+      "name": "test_voice",
+      "transcript": "Hello, this is a test voice.",
+      "model": "openvoice_v2"
+    },
+    {
+      "name": "another_voice",
+      "transcript": "Another voice sample.",
+      "model": "openf5_tts"
+    }
+  ]
+}

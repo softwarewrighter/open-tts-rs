@@ -1,0 +1,7 @@
+{
+  "status": "healthy",
+  "model": "openvoice_v2",
+  "cuda_available": true,
+  "gpu": "NVIDIA RTX 5060",
+  "device": "cuda:0"
+}

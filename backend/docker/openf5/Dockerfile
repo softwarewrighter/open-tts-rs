@@ -34,6 +34,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     curl \
     ffmpeg \
+    libavcodec-dev \
+    libavformat-dev \
+    libavutil-dev \
     libsndfile1 \
     libsndfile1-dev \
     libportaudio2 \
@@ -92,15 +95,19 @@ WORKDIR /app/f5-tts
 # Install F5-TTS
 RUN pip install --no-cache-dir -e .
 
+# Patch F5-TTS to use soundfile instead of torchaudio.load (avoids TorchCodec/FFmpeg issues)
+COPY patch_f5tts.py /tmp/patch_f5tts.py
+RUN python /tmp/patch_f5tts.py
+
 # Download OpenF5 weights (Apache 2.0 licensed - IMPORTANT!)
-# These are the commercially-usable weights trained on Emilia-YODAS dataset
+# Using mrfakename/OpenF5-TTS-Base - trained on permissively-licensed data
+# NOTE: This is alpha quality but Apache 2.0 licensed for commercial use
 RUN python -c "\
-from huggingface_hub import hf_hub_download; \
+from huggingface_hub import hf_hub_download, snapshot_download; \
 import os; \
-os.makedirs('/app/models/F5-TTS', exist_ok=True); \
-print('Downloading OpenF5 Apache 2.0 weights...'); \
-hf_hub_download(repo_id='SWivid/F5-TTS', filename='F5TTS_Base/model_1200000.safetensors', local_dir='/app/models'); \
-hf_hub_download(repo_id='SWivid/F5-TTS', filename='F5TTS_Base/vocab.txt', local_dir='/app/models'); \
+os.makedirs('/app/models/OpenF5-TTS-Base', exist_ok=True); \
+print('Downloading OpenF5-TTS-Base Apache 2.0 weights...'); \
+snapshot_download(repo_id='mrfakename/OpenF5-TTS-Base', local_dir='/app/models/OpenF5-TTS-Base'); \
 print('Download complete')"
 
 # Copy server script
