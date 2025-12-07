@@ -47,6 +47,8 @@ OPTIONS:
     -g, --generate <TEXT>      Text to generate speech from
     -n, --name <NAME>          Name for saving/loading voice
     -o, --output <FILE>        Output audio file [default: output.wav]
+    -s, --speed <SPEED>        Speech speed multiplier 0.5-2.0 [default: 1.0]
+        --host <HOST>          Backend server address [default: localhost]
     -v, --verbose              Enable verbose output
         --list-voices          List all saved voices
         --delete-voice <NAME>  Delete a saved voice
@@ -58,20 +60,30 @@ OPTIONS:
 
 ```bash
 # Clone voice from reference and generate speech immediately
-open-tts-rs -m ov -r "sample.wav;Hello, this is a sample of my voice." \
-            -g "Welcome to the demonstration."
+open-tts-rs --host curiosity -m ov -n myvoice \
+            -r "sample.wav;Hello, this is a sample of my voice." \
+            -g "Welcome to the demonstration." \
+            -o output.wav
 
-# Clone and save a voice for later use
-open-tts-rs -m of -r "recording.wav;This is my recorded message." -n my_voice
+# Clone and save a voice for later use (OpenF5 model)
+open-tts-rs --host curiosity -m of -n my_voice \
+            -r "recording.wav;This is my recorded message."
 
 # Generate using a previously saved voice
-open-tts-rs -n my_voice -g "Generate this text with my saved voice." -o speech.wav
+open-tts-rs --host curiosity -m ov -n my_voice \
+            -g "Generate this text with my saved voice." \
+            -o speech.wav
 
-# List all saved voices
-open-tts-rs --list-voices
+# Adjust speech speed (0.5 = slow, 2.0 = fast)
+open-tts-rs --host curiosity -m ov -n my_voice -s 1.2 \
+            -g "This will be spoken slightly faster." \
+            -o fast_speech.wav
 
-# Delete a saved voice
-open-tts-rs --delete-voice old_voice
+# List all saved voices on backend
+open-tts-rs --host curiosity -m ov --list-voices
+
+# Delete a saved voice from backend
+open-tts-rs --host curiosity -m ov --delete-voice old_voice
 ```
 
 ## Supported Models
