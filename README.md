@@ -81,6 +81,45 @@ open-tts-rs --delete-voice old_voice
 | OpenVoice V2 | `ov` | MIT | Fast voice cloning with good timbre matching |
 | OpenF5-TTS | `of` | Apache 2.0 | Advanced atmospheric cloning with emotion preservation |
 
+## Backend Server
+
+The TTS models run as Docker containers on a backend server. See [backend/README.md](backend/README.md).
+
+### Quick Start (Arch Linux host)
+
+```bash
+# Copy backend to server
+scp -r backend/ curiosity:~/open-tts-rs/
+
+# On the server
+cd ~/open-tts-rs/backend/scripts
+chmod +x *.sh
+./setup-arch.sh   # Install Docker + NVIDIA runtime
+# Log out/in for docker group
+./build-all.sh    # Build containers (15-30 min)
+./run-all.sh      # Start services
+```
+
+### Service Ports
+
+| Service | Port | URL |
+|---------|------|-----|
+| OpenVoice V2 | 9280 | http://curiosity:9280 |
+| OpenF5-TTS | 9288 | http://curiosity:9288 |
+
+### CRITICAL: Blackwell GPU Requirements
+
+The backend is designed for **NVIDIA RTX 5060 (Blackwell)** which requires:
+
+| Requirement | Value |
+|-------------|-------|
+| **CUDA** | 12.8+ (Blackwell sm_120 not supported by older versions) |
+| **PyTorch** | Nightly builds only (stable does not support Blackwell yet) |
+| **Driver** | 560+ |
+| **Base Image** | `nvidia/cuda:12.8.0-cudnn-devel-ubuntu24.04` |
+
+The Dockerfiles handle all CUDA/PyTorch requirements automatically.
+
 ## Documentation
 
 - [Product Requirements (PRD)](docs/prd.md) - Features, requirements, and use cases
@@ -128,9 +167,15 @@ open-tts-rs/
 |   +-- main.rs           # Entry point
 |   +-- cli/              # Command-line interface
 |   +-- core/             # Business logic
-|   +-- backend/          # TTS model backends
+|   +-- backend/          # TTS model backends (Rust)
 |   +-- voice/            # Voice management
 |   +-- audio/            # Audio I/O
++-- backend/
+|   +-- docker/
+|   |   +-- openvoice/    # OpenVoice V2 container
+|   |   +-- openf5/       # OpenF5-TTS container
+|   +-- scripts/          # Build/run scripts for Arch Linux
+|   +-- README.md         # Backend documentation
 +-- docs/
 |   +-- prd.md            # Product requirements
 |   +-- architecture.md   # System architecture

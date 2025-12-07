@@ -319,6 +319,76 @@ sample_rate = 24000
 | macOS x64 | CPU only | Secondary |
 | Windows x64 | CUDA | Secondary |
 
+## Docker Backend Architecture
+
+The TTS models run as Docker containers on a backend server, exposing REST APIs.
+
+```
++------------------+          +----------------------------+
+|   open-tts-rs    |   HTTP   |    Backend Host            |
+|      CLI         |<-------->|    (curiosity)             |
++------------------+          |                            |
+                              |  +----------------------+  |
+                              |  | openvoice-server     |  |
+                              |  | Port: 9280           |  |
+                              |  | CUDA 12.8 / sm_120   |  |
+                              |  +----------------------+  |
+                              |                            |
+                              |  +----------------------+  |
+                              |  | openf5-server        |  |
+                              |  | Port: 9288           |  |
+                              |  | CUDA 12.8 / sm_120   |  |
+                              |  +----------------------+  |
+                              |                            |
+                              |  +----------------------+  |
+                              |  | NVIDIA RTX 5060 16GB |  |
+                              |  | (Blackwell)          |  |
+                              |  +----------------------+  |
+                              +----------------------------+
+```
+
+### CRITICAL: Blackwell GPU Requirements
+
+The target GPU is an **NVIDIA RTX 5060 (Blackwell architecture)** which has specific requirements:
+
+| Requirement | Value | Notes |
+|-------------|-------|-------|
+| CUDA Version | 12.8+ | Blackwell (sm_120) requires CUDA 12.8 minimum |
+| PyTorch | Nightly | Stable releases do not support sm_120 yet |
+| Driver | 560+ | Latest NVIDIA driver required |
+| Base Image | `nvidia/cuda:12.8.0-cudnn-devel-ubuntu24.04` | Ubuntu 24.04 for Python 3.12 |
+
+**PyTorch Installation for Blackwell:**
+```bash
+# MUST use nightly with cu128
+pip install --pre torch torchaudio \
+    --index-url https://download.pytorch.org/whl/nightly/cu128
+```
+
+**Environment Variables:**
+```bash
+export TORCH_CUDA_ARCH_LIST="12.0"  # Blackwell compute capability
+```
+
+### Container Ports
+
+| Service | Port | Model | License |
+|---------|------|-------|---------|
+| OpenVoice V2 | 9280 | Voice cloning + MeloTTS | MIT |
+| OpenF5-TTS | 9288 | Flow-matching TTS | Apache 2.0 |
+
+### Backend Scripts
+
+Located in `backend/scripts/`:
+
+| Script | Description |
+|--------|-------------|
+| `setup-arch.sh` | Install Docker + NVIDIA runtime on Arch Linux |
+| `build-all.sh` | Build both Docker containers |
+| `run-all.sh` | Start both services |
+| `stop-all.sh` | Stop all services |
+| `status.sh` | Check service and GPU status |
+
 ## Testing Strategy
 
 - **Unit Tests**: Core logic, voice parsing, audio I/O
