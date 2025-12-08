@@ -28,6 +28,9 @@ pub struct VoiceMetadata {
     pub transcript: String,
     pub model: String,
     pub created_at: String,
+    /// Original audio path (for Gradio backends that need re-upload)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub audio_path: Option<PathBuf>,
 }
 
 /// Manages local voice storage.

@@ -53,6 +53,7 @@ mod tests {
             transcript: "Hello world".to_string(),
             model: "openvoice_v2".to_string(),
             created_at: "2024-01-01T00:00:00Z".to_string(),
+            audio_path: None,
         };
 
         manager.save_metadata(&metadata).unwrap();
@@ -81,6 +82,7 @@ mod tests {
             transcript: "Delete me".to_string(),
             model: "openvoice_v2".to_string(),
             created_at: "2024-01-01T00:00:00Z".to_string(),
+            audio_path: None,
         };
 
         manager.save_metadata(&metadata).unwrap();
@@ -100,6 +102,7 @@ mod tests {
             transcript: "First".to_string(),
             model: "openvoice_v2".to_string(),
             created_at: "2024-01-01T00:00:00Z".to_string(),
+            audio_path: None,
         };
 
         let metadata2 = VoiceMetadata {
@@ -107,6 +110,7 @@ mod tests {
             transcript: "Second".to_string(),
             model: "openf5_tts".to_string(),
             created_at: "2024-01-02T00:00:00Z".to_string(),
+            audio_path: None,
         };
 
         manager.save_metadata(&metadata1).unwrap();
@@ -129,6 +133,7 @@ mod tests {
             transcript: "Malicious".to_string(),
             model: "openvoice_v2".to_string(),
             created_at: "2024-01-01T00:00:00Z".to_string(),
+            audio_path: None,
         };
 
         let result = manager.save_metadata(&metadata);

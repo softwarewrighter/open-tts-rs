@@ -42,7 +42,7 @@ pip install openvoice melo-tts f5-tts torch numpy
 open-tts-rs [OPTIONS]
 
 OPTIONS:
-    -m, --model <MODEL>        TTS model: "ov" (OpenVoiceV2) or "of" (OpenF5-TTS) [default: ov]
+    -m, --model <MODEL>        TTS model: "ov" | "of" | "vc" [default: ov]
     -r, --reference <REF>      Reference audio with transcript: "file.wav;transcript text"
     -g, --generate <TEXT>      Text to generate speech from
     -n, --name <NAME>          Name for saving/loading voice
@@ -84,6 +84,12 @@ open-tts-rs --host curiosity -m ov --list-voices
 
 # Delete a saved voice from backend
 open-tts-rs --host curiosity -m ov --delete-voice old_voice
+
+# Use VoxCPM model (Gradio-based, no voice persistence)
+open-tts-rs --host curiosity -m vc -n vcvoice \
+            -r "sample.wav;Hello, this is a sample of my voice." \
+            -g "VoxCPM generates high-quality speech." \
+            -o voxcpm_output.wav
 ```
 
 ## Supported Models
@@ -92,6 +98,7 @@ open-tts-rs --host curiosity -m ov --delete-voice old_voice
 |-------|------|---------|----------|
 | OpenVoice V2 | `ov` | MIT | Fast voice cloning with good timbre matching |
 | OpenF5-TTS | `of` | Apache 2.0 | Advanced atmospheric cloning with emotion preservation |
+| VoxCPM | `vc` | - | End-to-end TTS with high realism (Gradio API) |
 
 ## Backend Server
 
@@ -118,6 +125,7 @@ chmod +x *.sh
 |---------|------|-----|
 | OpenVoice V2 | 9280 | http://curiosity:9280 |
 | OpenF5-TTS | 9288 | http://curiosity:9288 |
+| VoxCPM | 8700 | http://curiosity:8700 |
 
 ### CRITICAL: Blackwell GPU Requirements
 

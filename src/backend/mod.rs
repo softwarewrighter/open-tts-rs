@@ -183,6 +183,8 @@ mod tests {
             text: "Hello world".to_string(),
             voice_name: Some("my_voice".to_string()),
             speed: 1.0,
+            reference_audio: None,
+            reference_transcript: None,
         };
 
         let result = mock.synthesize(&request);

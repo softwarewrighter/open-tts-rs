@@ -63,12 +63,13 @@ impl<B: Backend> TTSEngine<B> {
             .backend
             .extract_voice(audio_path, transcript, name.clone())?;
 
-        // Save metadata locally
+        // Save metadata locally (include audio path for Gradio backends)
         let metadata = VoiceMetadata {
             name: voice_info.name.clone(),
             transcript: voice_info.transcript.clone(),
             model: voice_info.model.clone(),
             created_at: Utc::now().to_rfc3339(),
+            audio_path: Some(audio_path.to_path_buf()),
         };
         self.voice_manager.save_metadata(&metadata)?;
 
@@ -84,18 +85,29 @@ impl<B: Backend> TTSEngine<B> {
         voice_name: Option<String>,
         speed: f32,
     ) -> Result<Vec<u8>, TTSError> {
-        // If voice specified, verify it exists locally
-        if let Some(ref name) = voice_name
-            && self.voice_manager.load_metadata(name).is_err()
-        {
-            return Err(TTSError::VoiceNotFound(name.clone()));
-        }
+        // Load voice metadata if specified
+        let metadata = match &voice_name {
+            Some(name) => Some(
+                self.voice_manager
+                    .load_metadata(name)
+                    .map_err(|_| TTSError::VoiceNotFound(name.clone()))?,
+            ),
+            None => None,
+        };
 
-        let request = SynthesizeRequest {
+        let mut request = SynthesizeRequest {
             text: text.to_string(),
             voice_name,
             speed,
+            reference_audio: None,
+            reference_transcript: None,
         };
+
+        // Add reference audio/transcript for Gradio backends
+        if let Some(meta) = metadata {
+            request.reference_audio = meta.audio_path;
+            request.reference_transcript = Some(meta.transcript);
+        }
 
         Ok(self.backend.synthesize(&request)?)
     }

@@ -59,6 +59,12 @@ pub struct SynthesizeRequest {
     pub voice_name: Option<String>,
     #[serde(default = "default_speed")]
     pub speed: f32,
+    /// Reference audio path (for Gradio backends like VoxCPM)
+    #[serde(skip)]
+    pub reference_audio: Option<std::path::PathBuf>,
+    /// Reference transcript (for Gradio backends like VoxCPM)
+    #[serde(skip)]
+    pub reference_transcript: Option<String>,
 }
 
 fn default_speed() -> f32 {
@@ -72,6 +78,8 @@ impl SynthesizeRequest {
             text: text.into(),
             voice_name: None,
             speed: 1.0,
+            reference_audio: None,
+            reference_transcript: None,
         }
     }
 
@@ -84,6 +92,18 @@ impl SynthesizeRequest {
     /// Set the speech speed.
     pub fn with_speed(mut self, speed: f32) -> Self {
         self.speed = speed;
+        self
+    }
+
+    /// Set reference audio path (for Gradio backends).
+    pub fn with_reference_audio(mut self, path: std::path::PathBuf) -> Self {
+        self.reference_audio = Some(path);
+        self
+    }
+
+    /// Set reference transcript (for Gradio backends).
+    pub fn with_reference_transcript(mut self, transcript: impl Into<String>) -> Self {
+        self.reference_transcript = Some(transcript.into());
         self
     }
 }

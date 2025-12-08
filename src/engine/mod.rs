@@ -107,6 +107,7 @@ mod tests {
             transcript: "Reference transcript".to_string(),
             model: "openvoice_v2".to_string(),
             created_at: "2024-01-01T00:00:00Z".to_string(),
+            audio_path: None,
         };
         voice_manager.save_metadata(&metadata).unwrap();
 
@@ -148,6 +149,7 @@ mod tests {
             transcript: "Local".to_string(),
             model: "openvoice_v2".to_string(),
             created_at: "2024-01-01T00:00:00Z".to_string(),
+            audio_path: None,
         };
         voice_manager.save_metadata(&metadata).unwrap();
 
@@ -183,6 +185,7 @@ mod tests {
             transcript: "Delete me".to_string(),
             model: "openvoice_v2".to_string(),
             created_at: "2024-01-01T00:00:00Z".to_string(),
+            audio_path: None,
         };
         voice_manager.save_metadata(&metadata).unwrap();
 

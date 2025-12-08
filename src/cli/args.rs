@@ -62,6 +62,10 @@ pub enum Model {
     /// OpenF5-TTS (Apache 2.0, atmospheric cloning)
     #[value(name = "of")]
     OpenF5,
+
+    /// VoxCPM (end-to-end TTS from ModelBest)
+    #[value(name = "vc")]
+    VoxCPM,
 }
 
 impl Model {
@@ -70,6 +74,7 @@ impl Model {
         match self {
             Model::OpenVoice => "ov",
             Model::OpenF5 => "of",
+            Model::VoxCPM => "vc",
         }
     }
 
@@ -78,6 +83,7 @@ impl Model {
         match self {
             Model::OpenVoice => 9280,
             Model::OpenF5 => 9288,
+            Model::VoxCPM => 8700,
         }
     }
 
@@ -86,7 +92,13 @@ impl Model {
         match self {
             Model::OpenVoice => "OpenVoice V2",
             Model::OpenF5 => "OpenF5-TTS",
+            Model::VoxCPM => "VoxCPM",
         }
+    }
+
+    /// Returns true if this model uses Gradio API.
+    pub fn is_gradio(&self) -> bool {
+        matches!(self, Model::VoxCPM)
     }
 }
 
